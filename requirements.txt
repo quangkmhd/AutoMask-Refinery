@@ -1,0 +1,9 @@
+flask
+numpy
+opencv-python
+pandas
+scikit-learn
+tqdm
+torch
+ultralytics
+transformers

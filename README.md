@@ -39,10 +39,20 @@ Options for `app.py`:
 - `--port`: Flask port (default: `5000`).
 - `--host`: Flask host (default: `0.0.0.0`).
 
+### 4. Post-Review Organization
+Organize images into `pass` and `fail` folders based on the review results. This will also move corresponding `.json` and `.xml` files.
+```bash
+python organize_images.py
+```
+This script uses `review_details.csv` to move files from the source directory into:
+- pass/`
+- failed/`
+
 ## Project Structure
 - `src/`: Core logic and scripts.
 - `data/demo/`: Sample data for demonstration.
 - `src/templates/`: HTML templates for the review app.
+- `organize_images.py`: Post-review script for data sorting.
 
 ## License
 MIT

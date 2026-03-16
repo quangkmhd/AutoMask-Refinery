@@ -129,15 +129,24 @@ def index():
 
 @app.route('/api/folders')
 def get_folders():
-    folders = sorted([d for d in os.listdir(ROOT_DIR) if os.path.isdir(os.path.join(ROOT_DIR, d))])
-    return jsonify(folders)
+    folder_list = []
+    for root, dirs, files in os.walk(ROOT_DIR):
+        # Check if current directory has at least one .json file (excluding review results)
+        if any(f.endswith('.json') and f != '.review_results.json' for f in files):
+            # Use relative path from ROOT_DIR
+            rel_path = os.path.relpath(root, ROOT_DIR)
+            if rel_path == ".":
+                continue # Skip root itself if it has jsons directly (unlikely)
+            folder_list.append(rel_path)
+    
+    return jsonify(sorted(folder_list))
 
-@app.route('/api/images/<folder_name>')
+@app.route('/api/images/<path:folder_name>')
 def get_images(folder_name):
     samples, folder_status = get_folder_review_data(folder_name)
     return jsonify({"images": samples, "status": folder_status})
 
-@app.route('/api/render_image/<folder_name>/<image_name>')
+@app.route('/api/render_image/<path:folder_name>/<image_name>')
 def render_image(folder_name, image_name):
     folder_path = os.path.join(ROOT_DIR, folder_name)
     img_path = os.path.join(folder_path, image_name + ".jpg")
@@ -197,6 +206,7 @@ def render_image(folder_name, image_name):
 @app.route('/api/save_review', methods=['POST'])
 def save_review():
     data = request.json
+    # folder_name can now be a path like "A/B/C"
     folder_name = data.get('folder')
     overrides = data.get('overrides') # dict: { "id": "pass" | "fail" }
     

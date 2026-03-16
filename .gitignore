@@ -26,3 +26,4 @@ data/*
 # CSV files
 *.csv
 !data/demo/*.csv
+*.pt

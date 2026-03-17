@@ -23,7 +23,5 @@ Thumbs.db
 data/*
 !data/demo/
 
-# CSV files
-*.csv
 !data/demo/*.csv
 *.pt

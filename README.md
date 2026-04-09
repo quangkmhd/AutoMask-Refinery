@@ -1,13 +1,13 @@
 # AutoMask Refinery
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)
-![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=flat-square&logo=PyTorch&logoColor=white)
-![YOLO](https://img.shields.io/badge/Ultralytics-YOLO-blue.svg?style=flat-square)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)
+![Ultralytics](https://img.shields.io/badge/Ultralytics-YOLO-00A9E0?style=flat-square)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)
 
 Automate and refine image segmentation masks instantly with YOLO and an intuitive web interface. Tailored for computer vision researchers and data annotators, AutoMask Refinery speeds up dataset preparation by up to 10x by combining zero-shot AI predictions with responsive human-in-the-loop correction tools.
 
-![AutoMask Refinery Demo](assets/review_app_screenshot.png)
+![AutoMask Refinery Demo](assets/demo.png)
 
 ## ✨ Key Features
 
@@ -27,11 +27,11 @@ Get the AutoMask Refinery web interface running locally in under 3 minutes.
 git clone https://github.com/quangkmhd/AutoMask-Refinery.git
 cd AutoMask-Refinery
 
-# 2. Install dependencies
-pip install -r requirements.txt
+# 2. Install the package
+pip install -e .
 
-# 3. Start the Flask application
-python src/app.py
+# 3. Launch the Review UI
+automask ui
 
 # 4. Open your browser
 # Navigate to http://localhost:5000
@@ -41,29 +41,12 @@ python src/app.py
 
 ## 📦 Installation
 
-We support both local Python installations and containerized environments.
-
-### Method 1: Local Python Environment
-
 Ideal for developers who want to modify the source code.
 
 ```bash
 python -m venv venv
 source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### Method 2: Docker Container (Recommended)
-
-Ensures zero dependency conflicts, especially for OpenCV and system libraries.
-
-```bash
-# Build the Docker image
-docker build -t automask-refinery .
-
-# Run the container
-docker run -p 5000:5000 -v $(pwd)/data:/app/data automask-refinery
+pip install -e .
 ```
 
 ## 💻 Usage Examples
@@ -110,8 +93,8 @@ for filename in tqdm(os.listdir(input_dir)):
 **Problem:** After refining masks, you need to split the data into training and validation sets for a downstream model.
 
 ```bash
-# Run the built-in utility script
-python organize_files.py --input_images ./data/images --input_masks ./data/masks --output_dir ./data/dataset --split 0.8
+# Run the unified CLI command
+automask organize --source ./data/images --pass-dir ./data/dataset/train --fail-dir ./data/dataset/failed --csv ./data/demo/review_details.csv
 ```
 **Expected Output:**
 ```text

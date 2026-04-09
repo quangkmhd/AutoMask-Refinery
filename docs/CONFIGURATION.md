@@ -4,49 +4,48 @@ This document details the configuration parameters required to optimize the Auto
 
 ## 1. Environment Variables (`.env`)
 
-The Flask application behavior is controlled via environment variables. Create a `.env` file in the project root.
+The application consumes settings from environment variables. You can also create a `.env` file in the project root. All variables must be prefixed with `AUTOMASK_`.
 
-| Variable | Description | Recommended Value |
-|----------|-------------|-------------------|
-| `FLASK_ENV` | Sets the application mode (`development` or `production`). | `development` |
-| `PORT` | The port the web interface binds to. | `5000` |
-| `MAX_IMAGE_SIZE` | To prevent browser memory crashes, images larger than this width/height (in pixels) will be downscaled before rendering. | `1920` |
-| `TEMP_DIR` | Directory for storing intermediate AI masks before the user hits "Save". | `./static/temp` |
-| `OUTPUT_DIR` | The final destination for human-approved masks. | `./data/masks` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUTOMASK_DEBUG` | Enable debug mode for Flask development. | `True` |
+| `AUTOMASK_PORT` | The port the web interface binds to. | `5000` |
+| `AUTOMASK_HOST` | The host interface to bind to. | `0.0.0.0` |
+| `AUTOMASK_DATA_DIR` | Path to the root dataset containing subfolders. | `./data/demo` |
+| `AUTOMASK_SUMMARY_CSV` | Path to the output review tracker CSV. | `review_details.csv` |
 
-## 2. YOLO Model Selection & Configuration
+## 2. Model Configuration
 
-The choice of YOLO weights heavily impacts the speed vs. accuracy trade-off in the UI. Modify the `YOLOSegmenter` initialization in `src/app.py` based on your hardware.
+The `MaskGenerator` class handles model loading. You can specify the model path via the CLI:
 
-### Official Ultralytics Weights
-- **`yolov8n-seg.pt` (Nano):** Extremely fast, runs well on CPU. Good for distinct, high-contrast objects. (Recommended for basic laptops).
-- **`yolov8s-seg.pt` (Small):** The default balance. Requires a modest GPU for real-time web UI feel.
-- **`yolov8x-seg.pt` (Extra Large):** Highly accurate, catches fine details (like hair or thin wires). Requires a dedicated GPU (e.g., RTX 3080+); otherwise, the web UI will feel sluggish (3-5 seconds per click).
-
-### Custom Weights
-If you have fine-tuned YOLO on your specific dataset, you can point the application directly to your `best.pt` file:
-```python
-# src/app.py
-segmenter = YOLOSegmenter(weights="./models/my_custom_dataset_best.pt")
+```bash
+automask generate --sam-model ./models/sam3.pt --imgsz 1036
 ```
 
-## 3. Frontend Canvas Tool Tuning
+### Hardware Acceleration
+The system automatically detects CUDA availability. To force a specific device, you can modify the environment or use the CLI (if exposed in specific commands).
 
-If you are developing or modifying the HTML/JS frontend, these hardcoded parameters in the JavaScript dictate the user experience.
+## 3. UI Refinement Logic
 
-- **`BRUSH_SIZE` (Default: `20`):** Defines the pixel radius of the manual correction tool. Can be mapped to a UI slider.
-- **`MASK_OPACITY` (Default: `0.5`):** The alpha channel value for the blue AI overlay. `0.5` allows the user to see the original image underneath the mask perfectly.
-- **`MASK_COLOR` (Default: `rgba(0, 120, 255, 0.5)`):** The hex/rgba color of the mask. Change this if the objects you are segmenting are naturally blue, making the mask hard to see.
+The interactive review logic uses specific geometric thresholds to flag masks for human attention:
 
-## 4. Docker Deployment Configuration
+- **Solidity Threshold (`< 0.65`)**: Flags masks that are too "holey" or not convex enough.
+- **Compactness Threshold (`> 150`)**: Flags masks with jagged, noisy, or complex edges (likely spidery artifacts).
+- **Area Ratio Threshold (`< 0.1`)**: Flags masks that are suspiciously small relative to their bounding box.
 
-If using the recommended Docker setup, you can override configurations at runtime using docker arguments:
+These are currently implemented in the `is_failed` helper within `app.py` and the `MaskDetector` class for consistency.
+
+## 4. Advanced Settings (Pydantic)
+
+Behind the scenes, the project uses a `Settings` class in `automask_refinery/config/settings.py`. For advanced customization (e.g., changing output folder names like `review_failures`), modify this class directly or set the corresponding environment variable (e.g., `AUTOMASK_REVIEW_OUT`).
+
+## 5. Docker Usage
+
+If running via Docker, you can pass configurations as environment variables:
 
 ```bash
 docker run -p 5000:5000 \
-  -e MAX_IMAGE_SIZE=1080 \
-  -v /path/to/your/raw/images:/app/data/images \
-  -v /path/to/your/approved/masks:/app/data/masks \
+  -e AUTOMASK_DATA_DIR=/data/my_project \
+  -v /local/path:/data/my_project \
   automask-refinery
 ```
-*Note on Docker and GPUs: To utilize GPU acceleration within the container, you must install the NVIDIA Container Toolkit and append the `--gpus all` flag to your `docker run` command.*

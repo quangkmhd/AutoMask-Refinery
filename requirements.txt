@@ -7,3 +7,7 @@ tqdm
 torch
 ultralytics
 transformers
+typer
+loguru
+pydantic-settings
+python-dotenv

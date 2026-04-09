@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "automask-refinery"
+version = "0.1.0"
+description = "Professional Mask Quality Control and Refinement Toolkit"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "flask",
+    "numpy",
+    "opencv-python",
+    "pandas",
+    "scikit-learn",
+    "tqdm",
+    "torch",
+    "ultralytics",
+    "transformers",
+    "typer",
+    "loguru",
+    "pydantic-settings",
+    "python-dotenv",
+]
+
+[project.scripts]
+automask = "automask_refinery.main:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
